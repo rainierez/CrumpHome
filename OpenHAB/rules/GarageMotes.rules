@@ -36,11 +36,11 @@ then
 	
 	if (Notification_state.state <= 1){
 		switch(GD1_sts.state) {
-			case 0 : notifyMyAndroid("Garage Door" , "Closed", 2)
-			case 1 : notifyMyAndroid("Garage Door" , "Closing", 2)
-			case 2 : notifyMyAndroid("Garage Door" , "Opening", 2)
-			case 3 : notifyMyAndroid("Garage Door" , "Open", 2)
-			case 4 : notifyMyAndroid("Garage Door" , "Unknown", 2)
+			case 0 : if (rule_debug_level >= 2) { "Garage Door is Closed") }
+			case 1 : if (rule_debug_level >= 3) { "Garage Door is Closing") }
+			case 2 : if (rule_debug_level >= 3) { "Garage Door is Opening") }
+			case 3 : if (rule_debug_level >= 2) { "Garage Door is Open") }
+			case 4 : if (rule_debug_level >= 2) { "Garage Door is Unknown") }
 		}
 	}
 end
@@ -57,4 +57,11 @@ when
 	Item GD1_button received command OFF
 then
 	sendCommand(moteino, "GD1_CLS;")
+end
+
+rule "gateway status check button press"
+when
+	Item GD1_check_sts received update
+then
+	sendCommand(moteino, "GD1_STS;")
 end
