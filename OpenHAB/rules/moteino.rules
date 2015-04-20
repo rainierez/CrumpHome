@@ -1,0 +1,386 @@
+import org.openhab.core.library.types.*
+import org.openhab.core.persistence.*
+import org.openhab.model.script.actions.*
+import java.lang.Integer
+
+var String moteinoUpdate = ""
+var Number sw1_sts_notified = 0
+var Number sec_sts_notified = 0
+var Number gw_sts_notified = 0
+
+//To debug the rules via the event log.
+// 0 = off
+// 1 = Errors
+// 2 = Warning
+// 3 = Notes
+// 4 = All
+// Use example: "if (rule_debug_level >= 2) { println("Warning: " + var) }"
+var Number rule_debug_level = 2
+
+// Set the nodeIDs in OpenHAB to match the sketches
+rule "when system starts"
+when
+	System started
+then
+	postUpdate(gateway_nodeid, "1")
+	postUpdate(SW1_nodeid, "79")
+	postUpdate(GD1_nodeid, "47")
+	postUpdate(SEC_nodeid, "61")
+	postUpdate(mm1_nodeid, "88")
+	postUpdate(SM1_nodeid, "72")
+end
+
+rule "On update from the moteino gateway"
+when 
+	Item moteino received update
+then
+    moteinoUpdate = moteinoUpdate + moteino.state.toString.trim
+    if (rule_debug_level >= 4) { println("moteinoUpdate -> " + moteinoUpdate)}
+    if (moteinoUpdate.contains(";")) {
+    	postUpdate(moteino_last_parsed, moteinoUpdate)
+    	moteinoUpdate = moteinoUpdate.replace(";","")
+    	
+    	var String[] buffer
+    	if(!moteinoUpdate.contains(",")) {
+    		moteinoUpdate = ""
+    	} else {
+    		buffer = moteinoUpdate.split(',')
+	    	
+			moteinoUpdate = ""
+			var String nodeIDString = buffer.get(0)
+			var String itemString = buffer.get(1)
+			var String valueString = buffer.get(2)
+			
+	    	if (nodeIDString == "79") { // Switchmote #1    	
+	    		if (itemString == "button0"){
+	    			postUpdate(SW1_BTN0, if(valueString=="1") ON else if (valueString == "0") OFF else Uninitialized)
+	    			if (valueString == "0" && GD1_sts.state == 3) { 
+	    				if (rule_debug_level >= 3) { println("Closing Garage door from physical SW1_BTN0 press") }
+	    				sendCommand(moteino, "GD1_CLS;") 
+	    			} else if (valueString == "1" && GD1_sts.state == 0){
+	    				if (rule_debug_level >= 3) { println("Opening Garage door from physical SW1_BTN0 press") }
+	    				sendCommand(moteino, "GD1_OPN;") 
+	    			}
+	    		}
+	    		if (itemString == "button1"){
+	    			postUpdate(SW1_BTN1, if(valueString=="1") ON else if (valueString == "0") OFF else Uninitialized)
+//	    			if (valueString=="1") {
+//	    				sendCommand(hue_sw_1, ON)
+//	    			} else if (valueString=="0") {
+//	    				sendCommand(hue_sw_1, OFF)
+//	    			}
+	    		}
+	    		if (itemString == "button2"){
+	    			postUpdate(SW1_BTN2, if(valueString=="1") ON else if (valueString == "0") OFF else Uninitialized)
+	    		}
+	    		if (itemString == "Startup") {
+	    			postUpdate(SW1_last_start, new DateTimeType())
+	    		}
+	    		postUpdate(SW1_last_sts, new DateTimeType())
+	    		if (SW1_state.state != ON) { postUpdate(SW1_state, ON) }
+	    	}
+	    	if (nodeIDString == "47") { // Garagemote #1 	    	
+		    	if (itemString == "doorSts") {
+		    		switch(valueString) {
+						case "0" : postUpdate(GD1_sts, 0)
+						case "1" : postUpdate(GD1_sts, 1)
+						case "2" : postUpdate(GD1_sts, 2)
+						case "3" : postUpdate(GD1_sts, 3)
+						case "4" : postUpdate(GD1_sts, 4)
+					}
+				}
+	    		if (itemString == "Startup") {
+	    			postUpdate(GD1_last_start, new DateTimeType())
+	    		}				
+				if (itemString == "lux"){
+		    		var Number lux
+					lux = Float::parseFloat(valueString)
+	    			postUpdate(GD1_lux, lux)
+	    		}
+	    		if (itemString == "hum"){
+		    		var Number hum = 0.00f
+					hum = Float::parseFloat(valueString)
+	    			postUpdate(GD1_hum, hum)
+	    		}
+	    		if (itemString == "temp"){
+		    		var Number tempf = 0.00f
+					tempf = Float::parseFloat(valueString)
+	    			postUpdate(GD1_temp, tempf)
+	    		}
+	    		if (itemString == "motion") {
+	    			postUpdate(GD1_motion_detected, ON)
+	    			postUpdate(GD1_last_detected, new DateTimeType())
+	    			if (Notification_state.state == ON){
+	    				if (rule_debug_level >= 2) { println("Notifying, GarageMote 1 detected motion.") }
+	    				notifyMyAndroid("Motion Detected", "GarageMote 1 detected motion.",1)
+	    			}
+	    		}
+	    		postUpdate(GD1_last_sts, new DateTimeType())
+	    		if (GD1_state.state != ON) { postUpdate(GD1_state, ON) }
+			}
+//			if (nodeIDString == "61") { // Securitymote #1   	
+//	    		if (itemString == "zone 0"){
+//	    			postUpdate(SEC_zone_0, if(valueString=="Open") ON else if (valueString == "Closed") OFF else Uninitialized)
+//	    			
+//	    			if (Notification_state.state == ON){
+//	    				notifyMyAndroid("Front Door" , if(SEC_zone_0.state==ON) "Open" else "Closed",2)
+//	    			}
+//	    		}
+//	    		if (itemString == "zone 1"){
+//	    			postUpdate(SEC_zone_1, if(valueString=="Open") ON else if (valueString == "Closed") OFF else Uninitialized)
+//	    			
+//	    			if (Notification_state.state == ON){
+//	    				notifyMyAndroid("Garage int Door" , if(SEC_zone_1.state==ON) "Open" else "Closed",2)
+//	    			}
+//	    		}
+//	    		if (itemString == "zone 2"){
+//	    			postUpdate(SEC_zone_2, if(valueString=="Open") ON else if (valueString == "Closed") OFF else Uninitialized)
+//	    			
+//	    			if (Notification_state.state == ON){
+//	    				notifyMyAndroid("Sliding Door" , if(SEC_zone_2.state==ON) "Open" else "Closed",2)
+//	    			}
+//	    		}
+//	    		if (itemString == "Alarm state"){
+//	    			postUpdate(SEC_alarm_state, if(valueString=="On") ON else if (valueString == "Off") OFF else Uninitialized)
+//	    		}
+//	    		if (itemString == "Armed state"){
+//	    			postUpdate(SEC_armed_state, valueString)
+//	    		}
+//	    		if (itemString == "Startup") {
+//	    			postUpdate(SEC_last_start, new DateTimeType())
+//	    		}
+//	    		postUpdate(SEC_last_sts, new DateTimeType())
+//	    		if (SEC_state.state == OFF) { postUpdate(SEC_state, ON) }
+//	    	}		
+			if (nodeIDString == "1")  {
+		    	if (itemString == "voltage"){
+		    		var Number voltage = 0.00f
+					voltage = Float::parseFloat(valueString)
+	    			postUpdate(mb_batt_volts, voltage)
+	    			if (voltage >= 3.8 && (mb_plugged_in == 0 || mb_plugged_in == Uninitialized)) {
+	    				if (mb_low_battery == 1 || mb_low_battery == Uninitialized) {postUpdate(mb_low_battery, 0)}
+	    				postUpdate(mb_plugged_in, 1)
+	    				notifyMyAndroid("Gateway" , "The gateway is now plugged in" ,2)
+	    			} else if (voltage < 3.8 && voltage >= 3.4 && (mb_plugged_in == 1 || mb_plugged_in == Uninitialized)) {
+	    				if (mb_low_battery == 1 || mb_low_battery == Uninitialized) {postUpdate(mb_low_battery, 0)}
+	    				postUpdate(mb_plugged_in, 0)
+	    				notifyMyAndroid("Gateway" , "The gateway is no longer plugged in" ,2)
+	    			} else if (voltage < 3.4 && (mb_low_battery == 0 || mb_low_battery == Uninitialized)) {
+	    				if (mb_plugged_in == 1 || mb_plugged_in == Uninitialized) {postUpdate(mb_plugged_in, 0)}
+	    				postUpdate(mb_low_battery, 1)
+	    				notifyMyAndroid("Gateway" , "The battery is low" ,2)
+	    			}
+	    		}
+	    		if (itemString == "Shutdown") {
+	    			postUpdate(mb_shutting_down, if(valueString=="1") ON)
+	    			notifyMyAndroid("Gateway" , "The gateway is shutting down" ,2)
+	    		}
+	    		if (itemString == "Startup") {
+	    			postUpdate(gateway_last_start, new DateTimeType())
+	    		}
+			}
+			if (nodeIDString == "88") {		//MotionMote
+		    	if (itemString == "voltage"){
+		    		var Number voltage = 0.00f
+					voltage = Float::parseFloat(valueString)
+	    			postUpdate(mm1_batt_volts, voltage)
+	    		}
+	    		if (itemString == "motion") {
+	    			postUpdate(mm1_detected, ON)
+	    			postUpdate(mm1_last_detected, new DateTimeType())
+	    			
+	    			if (rule_debug_level >= 3) { println("Notification State -> " + Notification_state.state) }
+	    			if (Notification_state.state == ON){
+	    				if (rule_debug_level >= 2) { println("Notifying, MotionMote 1 detected motion.") }
+	    				notifyMyAndroid("Motion Detected", "MotionMote 1 detected motion.",1)
+	    			}
+	    		}
+			}
+			if (nodeIDString == "72") {		//SensorMote 1
+		    	if (itemString == "voltage"){
+		    		var Number voltage = 0.00f
+					voltage = Float::parseFloat(valueString)
+	    			postUpdate(SM1_batt_volts, voltage)
+	    		}
+	    		if (itemString == "Startup") {
+	    			postUpdate(SM1_last_start, new DateTimeType())
+	    		}
+				if (itemString == "lux"){
+		    		var Number lux
+					lux = Float::parseFloat(valueString)
+	    			postUpdate(SM1_lux, lux)
+	    		}
+	    		if (itemString == "hum"){
+		    		var Number hum = 0.00f
+					hum = Float::parseFloat(valueString)
+	    			postUpdate(SM1_hum, hum)
+	    		}
+	    		if (itemString == "temp"){
+		    		var Number tempf = 0.00f
+					tempf = Float::parseFloat(valueString)
+	    			postUpdate(SM1_temp, tempf)
+	    		}
+	    		if (itemString == "motion") {
+	    			postUpdate(SM1_motion_detected, ON)
+	    			postUpdate(SM1_last_detected, new DateTimeType())
+	    			if (Notification_state.state == ON){
+	    				if (rule_debug_level >= 2) { println("Notifying, SensorMote 1 detected motion.") }
+	    				notifyMyAndroid("Motion Detected", "SensorMote 1 detected motion.",1)
+	    			}
+	    		}
+			}
+			postUpdate(gateway_last_sts, new DateTimeType())
+			if (gateway_state.state != ON) { postUpdate(gateway_state, ON) }
+		}
+    }
+end
+
+/*
+ * Status checks for each moteino
+ */
+
+//Check gateway statuses for if no update in 5 minutes
+rule "Timed gateway status check"
+when
+	Time cron "0 * * * * ?"
+then
+	if(gateway_last_sts.changedSince(now.minusMinutes(5))) {
+		sendCommand(moteino, "GW_STS;")
+	}
+end
+
+////Check Security zone statuses for Uninitialized or no update in 5 minutes
+//rule "Timed Security zone status check"
+//when
+//	Time cron "38 0/5 * * * ?"
+//then
+//	sendCommand(moteino, "SEC_STS;")
+//end
+
+//// if there has been no recent status updates then we change the state of the mote
+//rule "Change node states"	
+//when
+//	Time cron "45 * * * * ?"
+//then
+//	if(!SEC_last_sts.changedSince(now.minusMinutes(1))) { 
+//		postUpdate(SEC_state, ON)
+//		sec_sts_notified = 0
+//	} else {
+//		postUpdate(SEC_state, OFF)
+//		if (sec_sts_notified == 0) {
+//			//notifyMyAndroid("Security Status" , "No Status update in over 10 minutes", 1)
+//			sec_sts_notified = 1
+//		}
+//	}
+//	if(!gateway_last_sts.updatedSince(now.minusMinutes(10))) { 
+//		postUpdate(gateway_state, ON)
+//		gw_sts_notified = 0
+//	} else {
+//		postUpdate(gateway_state, OFF)
+//		postUpdate(SW1_state, OFF)
+//		if (gw_sts_notified == 0){
+//			//notifyMyAndroid("Gateway Status" , "No Status update in over 10 minutes", 2)
+//			gw_sts_notified = 1
+//		}
+//	}
+//end
+
+rule "gateway status check button press"
+when
+	Item gateway_check_sts received update
+then
+	sendCommand(moteino, "GW_STS;")
+end
+
+rule "gateway status check button press"
+when
+	Item GD1_check_sts received update
+then
+	sendCommand(moteino, "GD1_STS;")
+end
+
+
+//rule "Check security zone statuses"
+//when
+//	Item SEC_check_sts received command
+//then
+//	sendCommand(moteino, "SEC_STS;")
+//end
+//
+//rule "arm/disarm the security system"
+//when
+//	Item SEC_armed_state received command
+//then
+//	sendCommand(moteino, if(SEC_armed_state.state == 2) "SEC_ARM2;" else if(SEC_armed_state.state == 3) "SEC_ARM3;" else if(SEC_armed_state.state == 0) "SEC_ARM0;")
+//end
+//
+//rule "change SEC_arm_button if SEC_armed_sts changes"
+//when
+//	Item SEC_armed_state changed to 2 or
+//	Item SEC_armed_state changed to 3 or
+//	Item SEC_armed_state changed from 2 to 0 or
+//	Item SEC_armed_state changed from 3 to 0
+//then
+//	var String armedState
+//	if(SEC_armed_state.state == 0) {armedState = "Disarmed"}
+//	else if (SEC_armed_state.state == 1) {armedState = "Full Armed"}
+//	else if (SEC_armed_state.state == 3) {armedState = "Soft Armed"}
+//	notifyMyAndroid("Armed state changed" , "Armed state changed to " + armedState, 2)
+//end
+
+
+rule "change GD1_button if door state changes"
+when
+	Item GD1_sts changed or
+	System started
+then
+	if (rule_debug_level >= 4) { println("Now entering rule, change GD1_button if door state changes")}
+	if (rule_debug_level >= 3) { println("GD1_sts.state -> " + GD1_sts.state)}
+	if (rule_debug_level >= 3) { println("GD1_button.state -> " + GD1_button.state)}
+	if (rule_debug_level >= 3) { println("SW1_BTN0.state -> " + SW1_BTN0.state)}
+	
+	if (GD1_sts.state == 0) {
+		if (GD1_button.state == OFF) { 
+			if (rule_debug_level >= 3) { println("Changing GD1_button to ON") }
+			postUpdate(GD1_button, ON)
+		}
+		if (SW1_BTN0.state == ON) { 
+			if (rule_debug_level >= 3) { println("Changing SW1_BTN0 to OFF") }
+			sendCommand(moteino, "SW1_BTN0:0;")
+		}
+	}
+	if (GD1_sts.state == 3) {
+		if (GD1_button.state == ON) { 
+			if (rule_debug_level >= 3) { println("Changing GD1_button to OFF") }
+			postUpdate(GD1_button, OFF)
+		}
+		if (SW1_BTN0.state == OFF) { 
+			if (rule_debug_level >= 3) { println("Changing SW1_BTN0 to ON") }
+			sendCommand(moteino, "SW1_BTN0:1;")
+		}
+	}
+	
+	if (Notification_state.state <= 1){
+		switch(GD1_sts.state) {
+			case 0 : notifyMyAndroid("Garage Door" , "Closed", 2)
+			case 1 : notifyMyAndroid("Garage Door" , "Closing", 2)
+			case 2 : notifyMyAndroid("Garage Door" , "Opening", 2)
+			case 3 : notifyMyAndroid("Garage Door" , "Open", 2)
+			case 4 : notifyMyAndroid("Garage Door" , "Unknown", 2)
+		}
+	}
+end
+
+rule "GD1_button received command ON"
+when
+	Item GD1_button received command ON
+then
+	sendCommand(moteino, "GD1_OPN;")
+end
+
+rule "GD1_button received command OFF"
+when
+	Item GD1_button received command OFF
+then
+	sendCommand(moteino, "GD1_CLS;")
+end
