@@ -1,0 +1,10 @@
+Group Motion_devices																		(security)
+Group Motion_1																				(Motion_devices)
+Group mm1_chart																				(Motion_devices)
+ 
+/* MotionMote 1 */
+String mm1_nodeid					"Node ID [%s]"											(Motion_1)
+Switch mm1_detected					"Motion detected [%s]"									(Motion_1, security_log, Presence_log)
+DateTime mm1_last_detected			"Motion last detected [%1$ta %1$tR]"					(Motion_1, Presence_log)
+Number mm1_batt_volts				"Battery voltage [%.2f]"								(Motion_1, mm1_chart)
+Number mm1_Chart_Period				"Chart Period"							<chart>			(Motion_1)
