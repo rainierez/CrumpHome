@@ -1,0 +1,41 @@
+import org.openhab.core.library.types.*
+import org.openhab.core.persistence.*
+import org.openhab.model.script.actions.*
+
+rule "Check SensorMote 1's humidity"
+when
+	Item SM1_check_hum received command
+then
+	sendCommand(moteino, "SM1_HUM;")
+end
+
+rule "Check SensorMote 1's temperature"
+when
+	Item SM1_check_temp received command
+then
+	sendCommand(moteino, "SM1_TPF;")
+end
+
+rule "Check SensorMote 1's lux level"
+when
+	Item SM1_check_lux received command
+then
+	sendCommand(moteino, "SM1_LUX;")
+end
+
+rule "Check all of SensorMote 1 values"
+when
+	Item SM1_check_sts received command
+then
+	sendCommand(moteino, "SM1_STS;")
+end
+
+// Creates an item that stores the last update time of this item
+rule "Records last SensorMote 1 update time"
+when
+  Item SM1_hum received update or
+  Item SM1_temp received update or
+  Item SM1_lux received update
+then
+  postUpdate(SM1_last_sts, new DateTimeType())
+end
