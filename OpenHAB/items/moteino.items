@@ -4,7 +4,7 @@ Group Mighty_Boost																			(Mighty_Gateway)
  
 /* Mighty Gateway Group */
 String gateway_nodeid				"Node ID [%s]"											(Mighty_Gateway)
-String moteino  									  										(Mighty_Gateway)				{ serial="COM4" }
+String moteino  									  										(Mighty_Gateway)	{ serial="COM4" }
 String moteino_last_parsed			"Raw String [%s]"										(Mighty_Gateway, Gateway_log)
 DateTime gateway_last_sts			"Last update [%1$ta %1$tR]" 			<clock>			(Mighty_Gateway)
 DateTime gateway_last_check			"Last check [%1$ta %1$tR]" 				<clock>			(Mighty_Gateway)
