@@ -1,0 +1,23 @@
+Group GarageMotes																			(All)
+Group Garage_log																			(GarageMotes)
+Group Garage_1 																				(GarageMotes)
+Group GD1_temp_chart																		(Garage_1)
+Group GD1_hum_chart																			(Garage_1)
+Group GD1_lux_chart																			(Garage_1)
+
+/* GarageMote 1*/
+String GD1_nodeid					"Node ID [%s]"											(Garage_1)
+Number GD1_sts						"Garage door [MAP(gd_status.map):%d]"	<garagedoor>	(Garage_1, Garage_log)
+Switch GD1_button					"Open/Close"							<garagedoor>	(Garage_1, Garage_log)
+DateTime GD1_last_sts				"Last update [%1$ta %1$tR]" 			<clock>			(Garage_1)
+DateTime GD1_last_check				"Last check [%1$ta %1$tR]"	 			<clock>			(Garage_1)
+DateTime GD1_last_start				"Last start [%1$ta %1$tR]"	 			<clock>			(Garage_1, Garage_log)
+Switch GD1_check_sts				"Check Status"											(Garage_1)
+Switch GD1_state					"State [%s]"											(Garage_1)
+
+Number GD1_Chart_Period				"Chart Period"							<chart>			(Garage_1)
+Switch GD1_motion_detected			"Motion detected [%s]"									(Garage_1, security_log, Presence_log)
+DateTime GD1_last_detected			"Motion last detected [%1$ta %1$tR]"					(Garage_1, Presence_log)
+Number GD1_hum						"Humidity [%.1f %%]"									(Garage_1, GD1_hum_chart, Garage_log)
+Number GD1_temp						"Temperature [%.1f °F]"					<temperature>	(Garage_1, GD1_temp_chart, temps, Garage_log)
+Number GD1_lux						"Lux [%d]"												(Garage_1, GD1_lux_chart, Garage_log)
