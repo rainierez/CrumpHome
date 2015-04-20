@@ -1,3 +1,17 @@
+import org.openhab.core.library.types.*
+import org.openhab.core.persistence.*
+import org.openhab.model.script.actions.*
+import java.lang.Integer
+
+//To debug the rules via the event log.
+// 0 = off
+// 1 = Errors
+// 2 = Warning
+// 3 = Notes
+// 4 = All
+// Use example: "if (rule_debug_level >= 2) { println("Warning: " + var) }"
+var Number rule_debug_level = 2
+
 rule "change GD1_button if door state changes"
 when
 	Item GD1_sts changed or
