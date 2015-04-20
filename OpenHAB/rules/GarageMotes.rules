@@ -1,0 +1,46 @@
+rule "change GD1_button if door state changes"
+when
+	Item GD1_sts changed or
+	System started
+then
+	if (rule_debug_level >= 4) { println("Now entering rule, change GD1_button if door state changes")}
+	if (rule_debug_level >= 3) { println("GD1_sts.state -> " + GD1_sts.state)}
+	if (rule_debug_level >= 3) { println("GD1_button.state -> " + GD1_button.state)}
+	
+	if (GD1_sts.state == 0) {
+		if (GD1_button.state == OFF) { 
+			if (rule_debug_level >= 3) { println("Changing GD1_button to ON") }
+			postUpdate(GD1_button, ON)
+		}
+	}
+	if (GD1_sts.state == 3) {
+		if (GD1_button.state == ON) { 
+			if (rule_debug_level >= 3) { println("Changing GD1_button to OFF") }
+			postUpdate(GD1_button, OFF)
+		}
+	}
+	
+	if (Notification_state.state <= 1){
+		switch(GD1_sts.state) {
+			case 0 : notifyMyAndroid("Garage Door" , "Closed", 2)
+			case 1 : notifyMyAndroid("Garage Door" , "Closing", 2)
+			case 2 : notifyMyAndroid("Garage Door" , "Opening", 2)
+			case 3 : notifyMyAndroid("Garage Door" , "Open", 2)
+			case 4 : notifyMyAndroid("Garage Door" , "Unknown", 2)
+		}
+	}
+end
+
+rule "GD1_button received command ON"
+when
+	Item GD1_button received command ON
+then
+	sendCommand(moteino, "GD1_OPN;")
+end
+
+rule "GD1_button received command OFF"
+when
+	Item GD1_button received command OFF
+then
+	sendCommand(moteino, "GD1_CLS;")
+end
