@@ -1,0 +1,21 @@
+Group Mighty_Gateway 																		(All)
+Group Gateway_log																			(Mighty_Gateway)
+Group Mighty_Boost																			(Mighty_Gateway)
+ 
+/* Mighty Gateway Group */
+String gateway_nodeid				"Node ID [%s]"											(Mighty_Gateway)
+String moteino  									  										(Mighty_Gateway)				{ serial="COM4" }
+String moteino_last_parsed			"Raw String [%s]"										(Mighty_Gateway, Gateway_log)
+DateTime gateway_last_sts			"Last update [%1$ta %1$tR]" 			<clock>			(Mighty_Gateway)
+DateTime gateway_last_check			"Last check [%1$ta %1$tR]" 				<clock>			(Mighty_Gateway)
+DateTime gateway_last_start			"Last start [%1$ta %1$tR]"	 			<clock>			(Mighty_Gateway, Gateway_log, Main_log)
+Switch gateway_check_sts			"Check Status"											(Mighty_Gateway)
+Switch gateway_state				"Status [%s]"							<power>			(Mighty_Gateway, Gateway_log, Main_log)
+
+/* Mighty Boost Group */
+Group mb_Chart																				(mighty_boost)
+Number mb_Chart_Period				"Chart Period"							<chart>			(mighty_boost)
+Number mb_batt_volts				"Battery voltage [%.2f]"				<energy>		(mighty_boost, Gateway_log, mb_Chart)
+Number mb_plugged_in				"Power Source [MAP(pluggedin.map):%d]"					(mighty_boost, Gateway_log)
+Switch mb_shutting_down				"Below threshold, shutting down"						(mighty_boost, Gateway_log, Main_log)
+Number mb_low_battery				"Low Battery"							<energy>		(mighty_boost, Gateway_log, Main_log)
