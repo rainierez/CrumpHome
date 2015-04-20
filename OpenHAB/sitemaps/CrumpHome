@@ -1,0 +1,92 @@
+sitemap crumphome label="Main Menu"{
+	Frame	label="Mighty Gateway" {
+		Text	item=gateway_state{
+			Frame	label="Mightyboost"{
+				Text	item=mb_plugged_in	icon="energy"
+				Text	item=mb_batt_volts	icon="energy"
+			}
+			Frame	label="Battery history"{
+				Switch	item=mb_Chart_Period 		label="chart"	mappings=[0="1Hr", 1="4Hr", 2="8hr"]
+				Switch	item=mb_Chart_Period 		label="period"	mappings=[3="12Hr", 4="Day", 5="Week"]
+				Chart	item=mb_Chart period=h		refresh=600		visibility=[mb_Chart_Period==0, mb_Chart_Period=="Uninitialized"]
+				Chart	item=mb_Chart period=4h		refresh=3600	visibility=[mb_Chart_Period==1]
+				Chart	item=mb_Chart period=8h		refresh=3600	visibility=[mb_Chart_Period==2]
+				Chart	item=mb_Chart period=12h	refresh=600		visibility=[mb_Chart_Period==3]
+				Chart	item=mb_Chart period=D		refresh=3600	visibility=[mb_Chart_Period==4]
+				Chart	item=mb_Chart period=W		refresh=3600	visibility=[mb_Chart_Period==5]
+			}
+			Frame	label="Gateway"{
+				Text	item=gateway_last_sts
+				Switch	item=gateway_check_sts		mappings=[OFF="Check Now"]
+				Text	item=moteino_last_parsed		
+			}
+		}
+		Text	item=gateway_last_sts		visibility=[gateway_state==OFF]
+		Switch	item=gateway_check_sts		visibility=[gateway_state == OFF]	mappings=[OFF="Check Now"]
+	}
+	Frame label="Motion" {
+		Text	item=mm1_last_detected	label="MotionMote1 motion [%1$ta %1$tR]"{
+			Frame {
+				Text	item=mm1_last_detected	label="Motion last detected [%1$ta %1$tR]"
+				Text	item=mm1_batt_volts		icon="energy"
+			}
+			Frame {
+				Switch	item=mm1_Chart_Period 		label="chart"	mappings=[0="12 Hours", 1="Day", 2="Week"]
+				Switch	item=mm1_Chart_Period 		label="period"	mappings=[3="Month", 4="2 Months", 5="Year"]
+				Chart	item=mm1_chart period=12h	refresh=3600	visibility=[mm1_Chart_Period==0, mm1_Chart_Period=="Uninitialized"]
+				Chart	item=mm1_chart period=D		refresh=3600	visibility=[mm1_Chart_Period==1]
+				Chart	item=mm1_chart period=W		refresh=3600	visibility=[mm1_Chart_Period==2]
+				Chart	item=mm1_chart period=M		refresh=3600	visibility=[mm1_Chart_Period==3]
+				Chart	item=mm1_chart period=2M	refresh=3600	visibility=[mm1_Chart_Period==4]
+				Chart	item=mm1_chart period=Y		refresh=3600	visibility=[mm1_Chart_Period==5]
+			}
+		}
+	}
+	Frame	label="Garage"{
+		Text	item=GD1_sts	visibility=[GD1_state==ON] {
+			Frame 	label="Status" {
+				Text	item=GD1_sts
+				Switch	item=GD1_button		mappings=[ON="Open"]	visibility=[GD1_sts==0]		icon='garagedoor'
+				Switch	item=GD1_button		mappings=[OFF="Close"]	visibility=[GD1_sts==3]		icon='garagedoor'
+				Text	item=GD1_last_sts
+				Text	item=GD1_last_detected
+				Switch	item=GD1_check_sts	mappings=[OFF="Check now"]
+			}
+			Frame 	label="Values" {
+				Text	item=GD1_temp{
+					Switch	item=GD1_Chart_Period 			label="chart"	mappings=[0="1hr", 1="4hr", 2="8hr"]
+					Switch	item=GD1_Chart_Period 			label="period"	mappings=[3="12hr", 4="Day", 5="Week"]
+					Chart	item=GD1_temp_chart period=h	refresh=600	visibility=[GD1_Chart_Period==0, GD1_Chart_Period=="Uninitialized"]
+					Chart	item=GD1_temp_chart period=4h	refresh=3600	visibility=[GD1_Chart_Period==1]
+					Chart	item=GD1_temp_chart period=8h	refresh=3600	visibility=[GD1_Chart_Period==2]
+					Chart	item=GD1_temp_chart period=12h	refresh=3600	visibility=[GD1_Chart_Period==3]
+					Chart	item=GD1_temp_chart period=D	refresh=3600	visibility=[GD1_Chart_Period==4]
+					Chart	item=GD1_temp_chart period=W	refresh=3600	visibility=[GD1_Chart_Period==5]
+				}
+				Text	item=GD1_hum{
+					Switch	item=GD1_Chart_Period 			label="chart"	mappings=[0="1hr", 1="4hr", 2="8hr"]
+					Switch	item=GD1_Chart_Period 			label="period"	mappings=[3="12hr", 4="Day", 5="Week"]
+					Chart	item=GD1_hum_chart period=h		refresh=600	visibility=[GD1_Chart_Period==0, GD1_Chart_Period=="Uninitialized"]
+					Chart	item=GD1_hum_chart period=4h	refresh=3600	visibility=[GD1_Chart_Period==1]
+					Chart	item=GD1_hum_chart period=8h	refresh=3600	visibility=[GD1_Chart_Period==2]
+					Chart	item=GD1_hum_chart period=12h	refresh=3600	visibility=[GD1_Chart_Period==3]
+					Chart	item=GD1_hum_chart period=D		refresh=3600	visibility=[GD1_Chart_Period==4]
+					Chart	item=GD1_hum_chart period=W		refresh=3600	visibility=[GD1_Chart_Period==5]
+				}
+				Text	item=GD1_lux{
+					Switch	item=GD1_Chart_Period 			label="chart"	mappings=[0="1hr", 1="4hr", 2="8hr"]
+					Switch	item=GD1_Chart_Period 			label="period"	mappings=[3="12hr", 4="Day", 5="Week"]
+					Chart	item=GD1_lux_chart period=h		refresh=600	visibility=[GD1_Chart_Period==0, GD1_Chart_Period=="Uninitialized"]
+					Chart	item=GD1_lux_chart period=4h	refresh=3600	visibility=[GD1_Chart_Period==1]
+					Chart	item=GD1_lux_chart period=8h	refresh=3600	visibility=[GD1_Chart_Period==2]
+					Chart	item=GD1_lux_chart period=12h	refresh=3600	visibility=[GD1_Chart_Period==3]
+					Chart	item=GD1_lux_chart period=D		refresh=3600	visibility=[GD1_Chart_Period==4]
+					Chart	item=GD1_lux_chart period=W		refresh=3600	visibility=[GD1_Chart_Period==5]
+				}
+			}
+		}
+		Switch	item=GD1_button		mappings=[ON="Open"]		visibility=[GD1_sts==0]		icon='garagedoor'
+		Switch	item=GD1_button		mappings=[OFF="Close"]		visibility=[GD1_sts==3]		icon='garagedoor'
+		Switch	item=GD1_check_sts	mappings=[OFF="Check now"]	visibility=[GD1_sts==1, GD1_sts==2, GD1_sts==4, GD1_sts=="Uninitialized"]	icon='garagedoor'
+	}
+}
